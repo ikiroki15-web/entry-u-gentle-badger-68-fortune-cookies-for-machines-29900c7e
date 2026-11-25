@@ -84,6 +84,14 @@ function checkFortune(line: string): FortuneCheck {
     problems.push("fortune contains a line break; it must be a single line");
   }
 
+  // No control characters: a slip is plain readable text, and a stray
+  // control byte would make the file's character count lie about what a
+  // reader sees.
+  // eslint-disable-next-line no-control-regex
+  if (/[\u0000-\u001f\u007f]/.test(line)) {
+    problems.push("fortune contains a control character");
+  }
+
   // Not only white space.
   if (line.trim().length === 0) {
     problems.push("fortune is only white space");
@@ -130,10 +138,11 @@ function main(): void {
   }
 
   const charCount = [...fortune].length;
+  const byteCount = Buffer.byteLength(fortune, "utf8");
   writeFortune(fortune, OUTPUT_PATH);
 
   console.log(fortune);
-  console.log(`chars: ${charCount} (limit ${MAX_CHARS})`);
+  console.log(`chars: ${charCount} (limit ${MAX_CHARS}), bytes: ${byteCount}`);
   console.log(`wrote: ${OUTPUT_PATH}`);
 }
 
